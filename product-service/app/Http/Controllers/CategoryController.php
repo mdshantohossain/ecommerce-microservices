@@ -8,13 +8,14 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use PHPUnit\Util\Json;
 
 class CategoryController extends Controller
 {
     public function index()
     {
 
-        return  Category::all();
+        return  response()->json(Category::with('subCategories')->get());
 
 //        return view('admin.category.index', [
 //            'categories' => Category::all()
@@ -24,11 +25,20 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|unique:categories'
+            'name' => 'required|unique:categories',
+            'image' =>  'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'status' =>  'nullable',
         ]);
 
         try {
-            $category = Category::create($request->only('name', 'status'));
+
+            $inputs = $request->except('_token');
+
+            if ($request->hasFile('image')) {
+                $inputs = $this->getImageUrl($request->file('image'), 'assets/categories/images/');
+            }
+
+            $category = Category::create($inputs);
             if (!$category) return back()->with('error', 'category not created');
 
             return redirect('/categories')->with('success', 'Category created successfully');
@@ -40,11 +50,23 @@ class CategoryController extends Controller
     public function  update(Request $request, Category $category): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|unique:categories'
+            'name' => 'required|unique:categories',
+            'image' =>  'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'status' =>  'nullable',
         ]);
 
         try {
-            $category->update($request->only('name', 'status'));
+
+            $inputs = $request->except('_token');
+
+            if ($request->hasFile('image')) {
+                if (file_exists($category->image)) {
+                    unlink($category->image);
+                }
+                $inputs = $this->getImageUrl($request->file('image'), 'assets/categories/images/');
+            }
+
+            $category->update($inputs);
             return redirect('/categories')->with('success', 'Category updated successfully');
         } catch (\Exception $exception) {
             return redirect()->back()->with('error', $exception);
@@ -53,6 +75,10 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         try {
+            if (file_exists($category->image)) {
+                unlink($category->image);
+            }
+
             $category->delete();
 
             return back()->with('success', 'Category deleted successfully');

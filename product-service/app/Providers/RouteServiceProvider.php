@@ -26,22 +26,22 @@ class RouteServiceProvider extends ServiceProvider
     {
         // Bind {category} to use the slug field
         Route::bind('category', function (string $slug) {
-            return  Category::where('slug', $slug)->findOrFail();
+            return  Category::where('slug', $slug)->firstOrFail();
         });
 
         // Bind {subCategory} to use the slug field=
         Route::bind('subcategory', function (string $slug) {
-            return  SubCategory::where('slug', $slug)->findOrFail();
+            return  SubCategory::where('slug', $slug)->firstOrFail();
         });
 
         // Bind {brand} to use the slug field
         Route::bind('brand', function (string $slug) {
-            return  Brand::where('slug', $slug)->findOrFail();
+            return  Brand::where('slug', $slug)->firstOrFail();
         });
 
         // Bind {product} to use the slug field
         Route::bind('product', function (string $slug) {
-            return  Product::where('slug', $slug)->findOrFail();
+            return  Product::where('slug', $slug)->firstOrFail();
         });
     }
 }

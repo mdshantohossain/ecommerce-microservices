@@ -2,81 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Product;
+use App\Models\Brand;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class BrandController extends Controller
 {
-    public function index(): View
+    public function index(): Arrayable
     {
-        return view('admin.category.index', [
-            'categories' => Category::all()
-        ]);
+        return Brand::all();
     }
-    public function create(): View
-    {
-        return view('admin.category.create');
-    }
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|unique:categories'
+            'name' => 'required|unique:brands'
         ]);
 
         try {
-            $category = Category::create($request->only('name', 'status'));
-            if (!$category) return back()->with('error', 'category not created');
+            $category = Brand::create($request->only('name', 'status'));
+            if (!$category) return back()->with('error', 'Brand not created');
 
-            return redirect('/categories')->with('success', 'Category created successfully');
+            return redirect('/categories')->with('success', 'Brand created successfully');
 
         } catch (\Exception $exception) {
             return redirect()->back()->with('error', $exception->getMessage());
         }
     }
-    public function edit(Category $category): View
-    {
-        return view('admin.category.edit', [
-            'category' => $category
-        ]);
-    }
-    public function  update(Request $request, Category $category): RedirectResponse
+
+    public function  update(Request $request, Brand $brand): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|unique:categories'
+            'name' => 'required|unique:brands'
         ]);
 
         try {
-            $category->update($request->only('name', 'status'));
-            return redirect('/categories')->with('success', 'Category updated successfully');
+            $brand->update($request->only('name', 'status'));
+            return redirect('/categories')->with('success', 'Brand updated successfully');
         } catch (\Exception $exception) {
             return redirect()->back()->with('error', $exception);
         }
     }
-    public function destroy(Category $category)
+    public function destroy(Brand $brand): RedirectResponse
     {
         try {
-            $category->delete();
+            $brand->delete();
 
-            return back()->with('success', 'Category deleted successfully');
+            return back()->with('success', 'Brand deleted successfully');
         } catch (\Exception $exception) {
             return redirect()->back()->with('error', $exception);
         }
-    }
-
-    public function subCategoryProducts(int $id): View
-    {
-        return view('website.category-product.index', [
-            'products' => Product::where('sub_category_id', $id)->where('status', 1)->paginate(12),
-        ]);
-    }
-
-    public function categoryProducts(int $id): View
-    {
-        return view('website.category-product.index', [
-            'products' => Product::where('category_id', $id)->where('status', 1)->paginate(12),
-        ]);
     }
 }

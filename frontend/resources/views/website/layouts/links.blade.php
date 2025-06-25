@@ -46,6 +46,10 @@
         border-radius: 6px !important;
         border: 0 !important;
     }
+    .complete-action-bg{
+        background-color: #FF324D;
+        color: #fff
+    }
 </style>
 
 @vite('resources/js/app.js')

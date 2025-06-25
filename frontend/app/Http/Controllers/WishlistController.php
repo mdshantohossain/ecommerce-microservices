@@ -16,7 +16,7 @@ class WishlistController extends Controller
     {
         $request->validate([
             'user_id' =>  'required|exists:users,id',
-            'product_id' =>  'required|exists:products,id',
+            'slug' =>  'required',
         ]);
 
         try {

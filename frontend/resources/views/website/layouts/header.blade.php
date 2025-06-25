@@ -18,7 +18,7 @@
                                     <select class="first_null not_chosen" name="category_id">
                                         <option value="">All Category</option>
                                         @forelse($globalCategories as  $category)
-                                            <option value="{{ $category->id }}" {{ isset($categoryId) && $categoryId == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                            <option value="{{ $category['id'] }}" {{ isset($categoryId) && $categoryId == $category['id'] ? 'selected' : '' }}>{{ $category['name'] }}</option>
                                         @empty
                                             <option value="">Doesn't have any category</option>
                                         @endforelse
@@ -75,13 +75,15 @@
                             <ul>
                                 @foreach($globalCategories as $category)
                                     <li class="dropdown dropdown-mega-menu">
-                                    <a class="dropdown-item nav-link dropdown-toggler" href="#" data-bs-toggle="dropdown"><i class="flaticon-plugins"></i> <span>{{ $category->name }}</span></a>
+                                    <a class="dropdown-item nav-link dropdown-toggler" href="{{ route('category.product', $category['slug']) }}" data-bs-toggle="dropdown">
+                                        <img src="{{ $category['image'] }}" class="rounded-5" height="25" width="25" alt="">
+                                        <span>{{ $category['name'] }}</span></a>
                                     <div class="dropdown-menu">
                                         <ul class="mega-menu d-lg-flex">
                                                 <li class="mega-menu-col col-lg-4 col-md-4">
                                                 <ul>
-                                                    @foreach($category->subCategories as $subCategory)
-                                                    <li><a class="dropdown-item nav-link nav_item" href="{{ route('sub-category.product', $subCategory->id) }}">{{ $subCategory->name }}</a></li>
+                                                    @foreach($category['sub_categories'] as $subCategory)
+                                                    <li><a class="dropdown-item nav-link nav_item" href="{{ route('sub-category.product', $subCategory['slug']) }}">{{ $subCategory['name'] }}</a></li>
                                                     @endforeach
                                                 </ul>
                                             </li>
@@ -308,7 +310,7 @@
                                         </ul>
                                     </div>
                                 </li>
-                                <li><a class="nav-link nav_item" href="contact.html">Contact Us</a></li>
+                                <li><a class="nav-link nav_item" href="{{ route('contact') }}">Contact Us</a></li>
                             </ul>
                         </div>
                         <div class="contact_phone contact_support">

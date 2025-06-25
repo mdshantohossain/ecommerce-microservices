@@ -6,6 +6,7 @@ use App\Models\Admin\Category;
 use App\Models\Admin\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class CategoryController extends Controller
@@ -66,17 +67,30 @@ class CategoryController extends Controller
         }
     }
 
-    public function subCategoryProducts(int $id): View
+    public function categoryProducts(string $categorySlug): View
     {
-        return view('website.category-product.index', [
-            'products' => Product::where('sub_category_id', $id)->where('status', 1)->paginate(12),
+        $response = Http::get(env('API_GATEWAY_URL') . '/api/get-category-products/' . $categorySlug);
+
+        if($response->failed()) {
+            abort(404, 'Products not found');
+        }
+        return view('website.product-page.index', [
+            'products' => $response->json()['products'],
+            'categories' => $response->json()['categories'],
+        ]);
+    }
+    public function subCategoryProducts(string $subCategorySlug): View
+    {
+        $response = Http::get(env('API_GATEWAY_URL') . '/api/get-sub-category-products/' . $subCategorySlug);
+
+        if($response->failed()) {
+            abort(404, 'Products not found');
+        }
+        return view('website.product-page.index', [
+            'products' => $response->json()['products'],
+            'categories' => $response->json()['categories'],
         ]);
     }
 
-    public function categoryProducts(int $id): View
-    {
-        return view('website.category-product.index', [
-            'products' => Product::where('category_id', $id)->where('status', 1)->paginate(12),
-        ]);
-    }
+
 }

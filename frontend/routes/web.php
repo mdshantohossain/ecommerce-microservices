@@ -50,14 +50,16 @@ Route::get('/cart-remove-item/{rowId}', [CartController::class, 'productRemove']
 Route::post('/cart-update-item', [CartController::class, 'updateCartProduct'])->name('cart.update');
 Route::post('/cart-add-via-ajax', [CartController::class, 'addViaAjax']);
 
+// wishlist route
+Route::post('/add-to-wishlist/{slug}', [WishlistController::class, 'store']);
+
 // checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::get('/direct-checkout/{id}', [CheckoutController::class, 'directCheckout'])->name('direct.checkout');
 
-
-Route::get('/product-detail/{id}', [EcommerceController::class, 'productDetail'])->name('product.detail');
-Route::get('/sub-category-product/{id}', [CategoryController::class, 'subCategoryProducts'])->name('sub-category.product');
-Route::get('/category-product/{id}', [CategoryController::class, 'categoryProducts'])->name('category.product');
+Route::get('/product/{slug}', [EcommerceController::class, 'productDetail'])->name('product.detail');
+Route::get('/category-product/{slug}', [CategoryController::class, 'categoryProducts'])->name('category.product');
+Route::get('/sub-category-products/{slug}', [CategoryController::class, 'subCategoryProducts'])->name('sub-category.product');
 
 // order routes
 Route::resource( 'order', OrderController::class);

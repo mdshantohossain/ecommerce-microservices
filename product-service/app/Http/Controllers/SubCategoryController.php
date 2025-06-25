@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\SubCategory;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SubCategoryController extends Controller
 {
-    public function index(): View
+    public function index(): Arrayable
     {
-        return view('admin.sub-category.index', [
-            'subCategories' => SubCategory::all()
-        ]);
+        return SubCategory::all();
+
+//       1 ]);
     }
     public function create(): View
     {

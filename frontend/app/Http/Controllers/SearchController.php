@@ -2,33 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
 {
     public function index(Request $request)
     {
         $origin = $request->headers->get('host');
-        $categoryId = $request->category_id;
-        $query = Product::query();
 
-        if ($categoryId) {
-            $request->validate([
-                'category_id' => 'exists:categories,id'
-            ]);
-            $query->where('category_id', $categoryId);
+        $response = Http::get(env('API_GATEWAY_URL') . '/api/get-search-products', $request);
+
+        if ($response->failed()) {
+            abort(404, 'Search products not found');
         }
 
 //        if ($origin === env('APP_URL')) {
-            return view('website.search-product.index', [
-                'products' => $query->where('name', 'like', "%{$request->name}%")->get(),
+            return view('website.product-page.index', [
+                'products' => $response->json()['products'],
+                'categories' => $response->json()['categories'],
                 'query' =>  $request->name,
                 'categoryId' => $categoryId ?? ''
             ]);
 //        } else {
 //            abort(403);
 //        }
-
     }
 }

@@ -49,5 +49,72 @@
     @endif
 </script>
 
+<script>
+    function addToCart( slug ) {
+        $.ajax({
+            method: 'POST',
+            url: '/cart-add-via-ajax',
+            data: {
+                slug: slug,
+                qty: 1,
+                _token: '{{ csrf_token() }}'
+            },
+            success: (data) => {
+                if(data.success) {
+                    const btns = document.querySelectorAll(`[data-slug="${slug}"]`);
+
+                    btns.forEach(btn => {
+                        btn.classList.add('action-complete-style');
+                        btn.style.pointerEvents = 'none';
+                    })
+
+                    toastr.success(data.success)
+                }
+                if(data.warning) {
+                    toastr.warning(data.warning)
+                }
+            },
+            error: (error) => {
+                console.error(error)
+            }
+        });
+    }
+
+    function addToWishlist( slug ) {
+        const btns = document.querySelectorAll(`[data-slug="${slug}"]`);
+
+        btns.forEach(btn => {
+            btn.classList.add('action-complete-style');
+            btn.style.pointerEvents = 'none';
+        })
+
+        // toastr.success(data.success)
+        {{--$.ajax({--}}
+        {{--    method: 'POST',--}}
+        {{--    url: '/add-to-wishlist',--}}
+        {{--    data: {--}}
+        {{--        slug: slug,--}}
+        {{--        user_id: {{ auth()->id() }},--}}
+        {{--        _token: '{{ csrf_token() }}'--}}
+        {{--    },--}}
+        {{--    success: (data) => {--}}
+        {{--        if(data.success) {--}}
+        {{--            const btn = document.querySelector(`wishlist-#${slug}`);--}}
+        {{--            btn.classList.add('action-complete-style');--}}
+        {{--            btn.style.pointerEvents = 'none';--}}
+        {{--            btn.setAttribute('disabled', true);--}}
+        {{--            toastr.success(data.success)--}}
+        {{--        }--}}
+        {{--        if(data.warning) {--}}
+        {{--            toastr.warning(data.warning)--}}
+        {{--        }--}}
+        {{--    },--}}
+        {{--    error: (error) => {--}}
+        {{--        console.error(error)--}}
+        {{--    }--}}
+        {{--});--}}
+    }
+
+</script>
 
 @stack('scripts')

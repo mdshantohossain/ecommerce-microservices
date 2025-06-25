@@ -4,26 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\SubCategory;
 use App\Models\OtherImage;
+use App\Models\SubCategory;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(): Arrayable
     {
-        return view('admin.product.index', [
-            'products' => Product::orderBy('id', 'DESC')->get()
-        ]);
-    }
-    public function create(): View
-    {
-        return view('admin.product.create', [
-            'categories' => Category::where('status',  1)->get(),
-            'subCategories' => SubCategory::where('status',  1)->get(),
-        ]);
+        return Product::orderBy('id', 'DESC')->get();
+//
     }
     public function store(Request $request)
     {
@@ -63,7 +55,7 @@ class ProductController extends Controller
             ]);
 
             if($request->hasFile('main_image')) {
-                $inputs['main_image'] = $this->getImageUrl($request->file('main_image'), 'admin/assets/images/product-images/');
+                $inputs['main_image'] = $this->getImageUrl($request->file('main_image'), 'assets/images/product-images/');
             }
             $product = Product::create($inputs);
 
@@ -73,7 +65,7 @@ class ProductController extends Controller
                 foreach ($request->file('other_images') as $otherImage) {
                     OtherImage::create([
                         'product_id' => $product->id,
-                        'image' => $this->getImageUrl($otherImage, 'admin/assets/images/other-images/')
+                        'image' => $this->getImageUrl($otherImage, 'assets/images/other-images/')
                     ]);
                 }
             }
@@ -84,20 +76,6 @@ class ProductController extends Controller
         } catch (\Exception $exception) {
             return back()->with('error', $exception->getMessage());
         }
-    }
-    public function show(Product $product): View
-    {
-        return view('admin.product.show', [
-            'product' => $product
-        ]);
-    }
-    public function edit(Product $product): View
-    {
-        return view('admin.product.edit', [
-            'categories' => Category::where('status',  1)->get(),
-            'subCategories' => SubCategory::where('status',  1)->get(),
-            'product' => $product
-        ]);
     }
     public function  update(Request $request, Product $product): RedirectResponse
     {
@@ -132,7 +110,7 @@ class ProductController extends Controller
                 if(file_exists($product->main_image)) {
                     unlink($product->main_image);
                 }
-                $inputs['main_image'] = $this->getImageUrl($request->file('main_image'), 'admin/assets/images/product-images/');
+                $inputs['main_image'] = $this->getImageUrl($request->file('main_image'), 'assets/images/product-images/');
             }
 
             $product->update($inputs);
@@ -147,7 +125,7 @@ class ProductController extends Controller
                 foreach ($request->file('other_images') as $otherImage) {
                     OtherImage::create([
                         'product_id' => $product->id,
-                        'image' => $this->getImageUrl($otherImage, 'admin/assets/images/other-images/')
+                        'image' => $this->getImageUrl($otherImage, 'assets/images/other-images/')
                     ]);
                 }
             }
@@ -176,6 +154,89 @@ class ProductController extends Controller
             return back()->with('success', 'Product deleted successfully');
         } catch (\Exception $exception) {
             return redirect()->back()->with('error', $exception);
+        }
+    }
+    public function productDetail(Product $product)
+    {
+        try {
+
+            if (!$product) return response()->json('product not found');
+
+            return response()->json([
+                'product' => $product->load('otherImages'),
+                'related_products' => Product::where('sub_category_id', $product->sub_category_id)->whereStatus(1)->orderBy('id', 'DESC')->get()
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json($exception->getMessage());
+        }
+    }
+    public function singleProduct(string $slug)
+    {
+        try {
+            $product = Product::with('otherImages')->where('slug', $slug)->first();
+
+            if (!$product) return response()->json('product not found');
+
+            return response()->json($product);
+        } catch (\Exception $exception) {
+            return response()->json($exception->getMessage());
+        }
+    }
+
+    public function getCategoryProducts(Category $category)
+    {
+        try {
+            $products = Product::where('category_id', $category->id)->get();
+            return response()->json([
+                'products' => $products,
+                'categories' => Category::with('products')
+                    ->where('status', 1)
+                    ->take(5)
+                    ->get()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage());
+        }
+    }
+
+    public function getSubCategoryProducts(SubCategory $subCategory)
+    {
+        try {
+            $products = Product::where('sub_category_id', $subCategory->id)->get();
+            return response()->json([
+                'products' => $products,
+                'categories' => Category::with('products')
+                                        ->where('status', 1)
+                                        ->take(5)
+                                        ->get()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage());
+        }
+    }
+
+    public function getSearchProducts(Request $request)
+    {
+        try {
+            $query = Product::query();
+
+            if ($request->category_id) {
+                $query->where('category_id', $request->category_id);
+            }
+             $products = $query->where('name', 'like', "%$request->name%")->get();
+
+            return response()->json([
+                'products' => $products,
+                'categories' => Category::with('products')
+                    ->where('status', 1)
+                    ->take(5)
+                    ->get()
+            ]);
+
+        } catch (\Exception $exception) {
+            return response()->json($exception->getMessage());
         }
     }
 }

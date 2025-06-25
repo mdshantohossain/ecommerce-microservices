@@ -31,54 +31,61 @@
                         </div>
                         <div class="row shop_container">
                             @forelse($products as $product)
-                                <div class="col-md-4 col-6 ">
-                                <div class="product">
-                                    <div class="">
-                                        <a href="{{ route('product.detail', $product->id) }}">
-                                            <img src="{{ $product->main_image }}" height="220" class="rounded-2" width="100%" alt="product_img1" />
-                                        </a>
-{{--                                        <div class="product_action_box">--}}
-{{--                                            <ul class="list_none pr_action_btn">--}}
-{{--                                                <li class="add-to-cart"><a href="#"><i class="icon-basket-loaded"></i> Add To Cart</a></li>--}}
-{{--                                                <li><a href="shop-compare.html" class="popup-ajax"><i class="icon-shuffle"></i></a></li>--}}
-{{--                                                <li><a href="shop-quick-view.html" class="popup-ajax"><i class="icon-magnifier-add"></i></a></li>--}}
-{{--                                                <li><a href="#"><i class="icon-heart"></i></a></li>--}}
-{{--                                            </ul>--}}
-{{--                                        </div>--}}
-                                    </div>
-                                    <div class="product_info">
-                                        <h6 class="product_title"><a href="{{ route('product.detail', $product->id) }}">{{ $product->name }}</a></h6>
-                                        <div class="product_price">
-                                            <span class="price">Tk.{{ $product->selling_price }}</span>
-                                            <del>Tk.{{ $product->regular_price }}</del>
-                                            @if($product->discount)
-                                            <div class="on_sale">
-                                                <span>{{ $product->discount }} Off</span>
+                                <div class="col-xm-12 col-sm-6 col-md-4 col-lg-4 mb-4">
+                                    <div class="product">
+                                        <div class="">
+                                            <a href="{{ route('product.detail', $product['slug']) }}">
+                                                <img src="{{ $product['main_image'] }}" height="220" class="rounded-2 w-100" alt="el_img1">
+                                            </a>
+                                            <div class="mt-2">
+                                                <ul class="list_none pr_action_btn">
+                                                    <li class="add-to-cart" >
+                                                        <a
+                                                            href="javascript:void(0)"
+                                                            class="{{ isProductInCart($product['id']) ? 'action-complete-style': '' }}"
+                                                            onclick="event.preventDefault(); addToCart('{{ $product['slug'] }}')"
+                                                            data-slug="{{ $product['slug'] }}"
+                                                        >
+                                                            <i class="icon-basket-loaded"></i>
+                                                            Add To Cart
+                                                        </a>
+                                                    </li>
+                                                    <li><a href="shop-compare.html"><i class="icon-shuffle"></i></a></li>
+                                                    <li><a href="shop-quick-view.html" class="popup-ajax"><i class="icon-magnifier-add"></i></a></li>
+                                                    <li>
+                                                        <a
+                                                            href="javascript:void(0)"
+                                                            onclick="event.preventDefault(); addToWishlist('{{ 'wishlist-'. $product['slug'] }}')"
+                                                            data-slug="wishlist-{{ $product['slug'] }}"
+                                                            class="{{ isWishlist($product['id']) ? 'action-complete-style': '' }}"
+                                                        ><i class="icon-heart"></i>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </div>
-                                            @endif
                                         </div>
-                                        <div class="rating_wrap">
-                                            <div class="rating">
-                                                <div class="product_rate" style="width:80%"></div>
-                                            </div>
-                                            <span class="rating_num">(21)</span>
-                                        </div>
-                                        <div class="row flex-column mt-2">
-                                            <button
-                                                @if(isProductInCart($product->id))
-                                                    disabled
+                                        <div class="product_info">
+                                            <h6 class="product_title"><a href="{{ route('product.detail', $product['slug']) }}">{{ $product['name'] }}</a></h6>
+                                            <div class="product_price">
+                                                <span class="price">Tk.{{ $product['selling_price'] }}</span>
+                                                <del>Tk.{{ $product['regular_price'] }}</del>
+                                                @if($product['discount'])
+                                                    <div class="on_sale bg-danger p-2 absolute top-2 left-5">
+                                                        <span>{{ $product['discount'] }} Off</span>
+                                                    </div>
                                                 @endif
-                                                type="button"
-                                                class="d-block btn btn-sm btn-pink mb-1 text-white"
-                                                style="background: #FF324D"
-                                                onclick="addToCart({{ $product->id }})"
-                                                id="cartAddBtn{{$product->id}}"
-                                            >{{ isProductInCart($product->id) ? 'Added in cart' : 'Add to cart' }}</button>
-
-                                            <a href="{{ route('direct.checkout', $product->id) }}" class=" btn btn-sm btn-dark ms-0">Order Now</a>
+                                            </div>
+                                            <div class="rating_wrap">
+                                                <div class="rating">
+                                                    <div class="product_rate" style="width:80%"></div>
+                                                </div>
+                                                <span class="rating_num">(21)</span>
+                                            </div>
+                                            <div class="row flex-column mt-2">
+                                                <a href="{{ route('direct.checkout', $product['slug']) }}" class="btn btn-sm btn-dark ms-0">Order Now</a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                             </div>
                             @empty
                                 <h1 class="text-center text-secondary fs-4">Doesn't have any product</h1>
@@ -102,8 +109,8 @@
                             <div class="widget">
                                 <h5 class="widget_title">Categories</h5>
                                 <ul class="widget_categories">
-                                    @foreach($globalCategories->take(5) as $category)
-                                        <li><a href="{{ route('category.product', $category->id) }}"><span class="categories_name">{{ $category->name }}</span><span class="categories_num">({{ count($category->products) }})</span></a></li>
+                                    @foreach($categories as $category)
+                                        <li><a href="{{ route('category.product', $category['slug']) }}"><span class="categories_name">{{ $category['name'] }}</span><span class="categories_num">({{ count($category['products']) }})</span></a></li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -165,35 +172,3 @@
     <!-- END MAIN CONTENT -->
 @endsection
 
-
-
-@push('scripts')
-    <script>
-        function addToCart( productId) {
-
-            $.ajax({
-                method: 'POST',
-                url: '/cart-add-via-ajax',
-                data: {
-                    product_id: productId,
-                    qty: 1,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: (data) => {
-                    if(data.success) {
-                        const btn = document.querySelector('#cartAddBtn'+ productId);
-                        btn.setAttribute('disabled', true);
-                        btn.innerText = "Added To Cart";
-                        toastr.success(data.success)
-                    }
-                    if(data.warning) {
-                        toastr.warning(data.warning)
-                    }
-                },
-                error: (error) => {
-                    console.error(error)
-                }
-            });
-        }
-    </script>
-@endpush

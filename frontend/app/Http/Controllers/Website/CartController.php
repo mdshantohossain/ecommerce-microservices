@@ -7,27 +7,20 @@ use App\Models\Admin\Product;
 use App\Models\ShippingManagement;
 use Illuminate\Http\Request;
 use Gloudemans\Shoppingcart\Facades\Cart;
+use Illuminate\Support\Facades\Http;
 
 class CartController extends Controller
 {
     public function index()
     {
         return view('website.cart.index', [
-            'deliveryCharge' => ShippingManagement::first()->inside_dhaka_delivery_charge
+            'deliveryCharge' => ShippingManagement::first()?->inside_dhaka_delivery_charge
         ]);
     }
 
     public function addCart(Request $request)
     {
-        $product = Product::findOrFail($request->product_id);
-
-//        $alreadyAdded = false;
-//
-//
-//        foreach (Cart::content() as $cartItem) {
-//            if ($cartItem->product_id == $product->id) {}
-//        }
-
+        $product = (object) Http::get(env('API_GATEWAY_URL'). '/api/get-single-product/'. $request->slug)->json();
 
         Cart::add([
             'id' => $product->id,
@@ -77,7 +70,7 @@ class CartController extends Controller
 
     public function addViaAjax(Request $request)
     {
-        $product = Product::findOrFail($request->product_id);
+        $product = (object) Http::get(env('API_GATEWAY_URL'). '/api/get-single-product/'. $request->slug)->json();
         if (isProductInCart($product->id)) {
             return response()->json(['warning' => 'Product already added to cart']);
         }
